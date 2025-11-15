@@ -1,6 +1,6 @@
 import { useGLTF } from "@react-three/drei";
+import { useFrame, useThree } from "@react-three/fiber";
 import * as THREE from 'three';
-
 
 
 const Experience = () => {
@@ -16,6 +16,12 @@ const Experience = () => {
       });
     }
   });
+  const {camera}=useThree()
+  console.log(camera)
+  useFrame(()=>{
+    console.log(camera)
+  })
+
 
   return (
     <group>

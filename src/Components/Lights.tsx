@@ -7,7 +7,7 @@ const Lights = () => {
         value:0.4,
         min:0.0,
         max:2.0,
-        step:0.1
+        step:0.1,
       },
       dlIntensity:{
         value:2.0,

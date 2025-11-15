@@ -14,6 +14,9 @@ const Lights = () => {
         min:0.0,
         max:5.0,
         step:0.1
+      },
+      dlPosition:{
+        value:[0, 10, 10],
       }
     })
   })

@@ -1,28 +1,69 @@
 import { useGLTF } from "@react-three/drei";
+import { folder, useControls } from "leva";
 import * as THREE from "three";
+import { BuildingModel } from "./BuildingModel";
 
-const Experience = () => {
-  const { scene } = useGLTF("/model/houses1.glb");
+interface ExperienceProps {
+  setIsAnimating: (isAnimating: boolean) => void;
+}
+
+const Experience = ({ setIsAnimating }: ExperienceProps) => {
+  const { buildingScale, buildingPosition } = useControls({
+    "Building Controls": folder({
+      buildingScale: {
+        value: 0.0114,
+        min: 0.0,
+        max: 0.05,
+        step: 0.0001,
+        label: "Scale",
+      },
+      buildingPosition: {
+        value: [-0.6, -0.04, 0],
+        label: "Position",
+      },
+    }),
+  });
+
+  const { scene: surroundingHouses } = useGLTF("/model/houses1.glb");
+  const { scene: mainBuilding } = useGLTF("/model/building.glb");
 
   // Traverse the scene and apply a simple, flat material to every mesh
-  scene.traverse((obj) => {
+  surroundingHouses.traverse((obj) => {
     if (obj instanceof THREE.Mesh) {
       obj.material = new THREE.MeshStandardMaterial({
         color: "#d3d3d3", // An off-white color
         roughness: 1.0,
         metalness: 0.0,
       });
-      obj.castShadow=true;
+      obj.castShadow = true;
+    }
+  });
+
+  const mainBuildingMeshes: THREE.Mesh[] = [];
+
+  mainBuilding.traverse((obj) => {
+    if (obj instanceof THREE.Mesh) {
+      obj.material = new THREE.MeshStandardMaterial({
+        color: "#ff00ff",
+      });
+      obj.castShadow = true;
+      mainBuildingMeshes.push(obj);
     }
   });
 
   return (
     <group>
-      <primitive object={scene} />
+      <primitive object={surroundingHouses} />
       <mesh receiveShadow rotation={[Math.PI / 2, 0, 0]}>
         <planeGeometry args={[10, 10]} />
         <meshStandardMaterial color={"#d3d3d3"} side={THREE.DoubleSide} />
       </mesh>
+      <BuildingModel
+        scale={[buildingScale, buildingScale, buildingScale]}
+        position={buildingPosition}
+        rotation={[0, Math.PI / 2, 0]}
+        setIsAnimating={setIsAnimating}
+      />
     </group>
   );
 };

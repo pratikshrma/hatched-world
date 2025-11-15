@@ -8,29 +8,12 @@ interface MousePosition {
   y: number;
 }
 
-const MousePan = () => {
-  //plan
-  //so first take the mouse coordinates
-  ///convert them into normalized coordinates
-  //then apply then normailzed coords * strendgth * cam pos ho jna cahia usse
-  
+interface MousePanProps {
+  isAnimating: boolean;
+}
+
+const MousePan = ({ isAnimating }: MousePanProps) => {
   const { camera } = useThree();
-  const {camPosition, camRotation} = useControls({
-    "Camera Orientation": folder({
-      camPosition: {
-        value: [camera.position.x,camera.position.y,camera.position.z],
-      },
-      camRotation: {
-        value: [camera.rotation.x,camera.rotation.y,camera.rotation.z],
-      },
-    }),
-  });
-  useEffect(()=>{
-  
-  camera.position.set(camPosition[0],camPosition[1],camPosition[2])
-  camera.rotation.set(camRotation[0],camRotation[1],camRotation[2])
-    
-  },[camPosition,camRotation])
 
   const basePosition = useRef({
     x: 0.0,
@@ -54,6 +37,27 @@ const MousePan = () => {
     y: 0.0,
   });
 
+  // Initialize base position once on mount
+  useEffect(() => {
+    basePosition.current = {
+      x: camera.position.x,
+      y: camera.position.y,
+      z: camera.position.z,
+    };
+  }, []);
+
+  // Update base position when animation ends
+  useEffect(() => {
+    if (!isAnimating) {
+      // Animation just ended, update base position to current camera position
+      basePosition.current = {
+        x: camera.position.x,
+        y: camera.position.y,
+        z: camera.position.z,
+      };
+    }
+  }, [isAnimating, camera]);
+
   useEffect(() => {
     const updateMousePosition = (e: MouseEvent) => {
       const posx = e.clientX;
@@ -73,15 +77,10 @@ const MousePan = () => {
     return () => document.removeEventListener("mousemove", updateMousePosition);
   }, []);
 
-  useEffect(() => {
-    basePosition.current = {
-      x: camera.position.x,
-      y: camera.position.y,
-      z: camera.position.z,
-    };
-  }, [camera]);
-
   useFrame((_state, delta) => {
+    // Skip mouse panning when animation is active
+    if (isAnimating) return;
+
     easing.damp3(
       camera.position,
       [

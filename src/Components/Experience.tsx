@@ -12,13 +12,14 @@ const Experience = () => {
         roughness: 1.0,
         metalness: 0.0,
       });
+      obj.castShadow=true;
     }
   });
 
   return (
     <group>
       <primitive object={scene} />
-      <mesh rotation={[Math.PI / 2, 0, 0]}>
+      <mesh receiveShadow rotation={[Math.PI / 2, 0, 0]}>
         <planeGeometry args={[10, 10]} />
         <meshStandardMaterial color={"#d3d3d3"} side={THREE.DoubleSide} />
       </mesh>

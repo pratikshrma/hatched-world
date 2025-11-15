@@ -7,7 +7,7 @@ const App = () => {
   return (
     <>
       <Canvas shadows camera={{
-        position:[0.961,0.321,1.064],
+        position:[0.43,0.30,1.47],
         rotation:[-0.764,1.04183,0.6900]
       }}>
         <color attach="background" args={['#afa696']} />

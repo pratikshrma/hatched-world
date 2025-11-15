@@ -1,12 +1,15 @@
-import { EffectComposer, Noise, Sepia } from "@react-three/postprocessing";
-import DrawingEffects from "./DrawingEffects";
+import { EffectComposer } from "@react-three/postprocessing";
+import SepiaEffect from "./SepiaEffect";
+import NoiseEffect from "./NoiseEffect"; 
+import SketchEffect from "./SketchEffect";
+
 const PostProcessing = () => {
   return (
     <>
-      <EffectComposer multisampling={0} autoClear={false}>
-        <Sepia intensity={0.8} />
-        <Noise premultiply opacity={0.2} />
-        <DrawingEffects/>
+      <EffectComposer>
+        <SepiaEffect />
+        <NoiseEffect/>
+        <SketchEffect/>
       </EffectComposer>
     </>
   );

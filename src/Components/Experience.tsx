@@ -10,7 +10,7 @@ const Experience = () => {
   scene.traverse(obj => {
     if (obj instanceof THREE.Mesh) {
       obj.material = new THREE.MeshStandardMaterial({
-        color: '#afa696', // An off-white color
+        color: '#d3d3d3', // An off-white color
         roughness: 1.0,
         metalness: 0.0,
       });
@@ -22,7 +22,7 @@ const Experience = () => {
       <primitive object={scene} />
       <mesh rotation={[Math.PI/2,0,0]}>
       <planeGeometry args={[10,10]}/>
-      <meshStandardMaterial color={'#afa696'} side={THREE.DoubleSide}/>
+      <meshStandardMaterial color={'#d3d3d3'} side={THREE.DoubleSide}/>
       </mesh>
     </group>
   );

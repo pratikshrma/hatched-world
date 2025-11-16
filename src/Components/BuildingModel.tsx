@@ -133,10 +133,9 @@ export function BuildingModel({
       desiredLocation != currentLocation
     ) {
       // Increment progress along the curve (speed controlled here)
-      const newProgress = Math.min(progress + delta/10, 1); // 0.15 = speed, clamped to 1
-      const easedProgress = easings.easeOutCubic(newProgress) 
+      const newProgress = Math.min(progress + delta*.50, 1); // 0.15 = speed, clamped to 1
 
-      setProgress(easedProgress);
+      setProgress(newProgress);
       //lets just leave the far case for later
       let points = [coordsBeforeStartingAnimation.current];
       switch (currentLocation) {

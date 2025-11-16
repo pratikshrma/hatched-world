@@ -2,6 +2,9 @@ import { useGLTF } from "@react-three/drei";
 import { useThree, useFrame } from "@react-three/fiber";
 import { useEffect, useMemo, useRef, useState } from "react";
 import * as THREE from "three";
+import { useGSAP } from "@gsap/react";
+import gsap from "gsap";
+import { folder, useControls } from "leva";
 
 
 interface BuildingModelProps {
@@ -12,17 +15,47 @@ interface BuildingModelProps {
   backClicked: number;
 }
 
-const easings = {
-  easeOutCubic: (t: number) => 1 - Math.pow(1 - t, 3),
-  easeOutQuart: (t: number) => 1 - Math.pow(1 - t, 4),
-};
-
 export function BuildingModel({
   setIsAnimating,
   backClicked,
   ...props
 }: BuildingModelProps) {
   const { nodes, materials } = useGLTF("/model/building.glb") as any;
+
+  // Animation controls for designer
+  const { animationDuration, easingFunction } = useControls({
+    "Camera Animation": folder({
+      animationDuration: {
+        value: 2,
+        min: 0.5,
+        max: 5,
+        step: 0.1,
+        label: "Duration (s)",
+      },
+      easingFunction: {
+        value: "power2.inOut",
+        options: {
+          "Power 1 In Out": "power1.inOut",
+          "Power 2 In Out": "power2.inOut",
+          "Power 3 In Out": "power3.inOut",
+          "Power 4 In Out": "power4.inOut",
+          "Sine In Out": "sine.inOut",
+          "Expo In Out": "expo.inOut",
+          "Circ In Out": "circ.inOut",
+          "Back In Out": "back.inOut",
+          "Elastic In Out": "elastic.inOut",
+          "Bounce In Out": "bounce.inOut",
+          "Power 1 In": "power1.in",
+          "Power 2 In": "power2.in",
+          "Power 3 In": "power3.in",
+          "Power 1 Out": "power1.out",
+          "Power 2 Out": "power2.out",
+          "Power 3 Out": "power3.out",
+        },
+        label: "Easing",
+      },
+    }),
+  });
 
   // Clone the original material and darken it for hover effect
   const hoverObservatoryMaterial = useMemo(() => {
@@ -49,29 +82,18 @@ export function BuildingModel({
   const { camera } = useThree();
 
   const buildingCenter = new THREE.Vector3(-0.6, 0.1, 0);
-  const coordsBeforeStartingAnimation = useRef(
+
+  // Store the start position when animation begins
+  const animationStartPosition = useRef(
     new THREE.Vector3(camera.position.x, camera.position.y, camera.position.z),
   );
 
-  const f2mWaypoints = [
-    new THREE.Vector3(4.0, 2.5, 5.0), // Start from far away,
-    new THREE.Vector3(3.2, 2.2, 4.2), // Coming closer
-    new THREE.Vector3(2.4, 1.8, 3.5), // Descending
-    new THREE.Vector3(1.6, 1.3, 2.8), // Continue approach
-    new THREE.Vector3(1.2, 1.0, 2.2), // Getting closer
-    new THREE.Vector3(0.95, 0.8, 1.85), // Almost there
-    new THREE.Vector3(0.74, 0.58, 1.55), // Final position (current
-  ];
-
-  const m2nWaypoints = [
-    new THREE.Vector3(0.55, 0.51, 1.33), // Zoom in
-    new THREE.Vector3(0.36, 0.44, 1.11), // Closer
-    new THREE.Vector3(0.16, 0.37, 0.88), // Getting close
-    new THREE.Vector3(0.04, 0.33, 0.74), // Almost there
-    new THREE.Vector3(-0.09, 0.28, 0.59), // Final zoomed position
-  ];
+  // Fixed positions for each camera state
+  const farPosition = new THREE.Vector3(4.0, 2.5, 5.0);
+  const midPosition = new THREE.Vector3(0.74, 0.58, 1.55);
+  const nearPosition = new THREE.Vector3(-0.09, 0.28, 0.59);
   // Create a smooth curve through all waypoints
-  const [progress, setProgress] = useState(0); // -1 = not moving, 0-1 = progress along curve
+  const progressRef = useRef({ value: 0 }); // Object for GSAP to animate
   const [isMoving, setIsMoving] = useState(true);
   const [scaleMultiplier, setScaleMultiplier] = useState(1);
 
@@ -86,31 +108,74 @@ export function BuildingModel({
     console.log(currentLocation, " ", desiredLocation);
   }, [currentLocation, desiredLocation]);
 
+  // Initial animation on mount from far to mid
+  useEffect(() => {
+    if (currentLocation === "far" && desiredLocation === "mid" && progressRef.current.value === 0) {
+      setIsMoving(true);
+      setIsAnimating(true);
+
+      gsap.to(progressRef.current, {
+        value: 1,
+        duration: animationDuration,
+        ease: easingFunction,
+        onComplete: () => {
+          setIsMoving(false);
+          setIsAnimating(false);
+          setCurrentLocation("mid");
+        }
+      });
+    }
+  }, []); // Run only on mount
+
   useEffect(() => {
     if (backClicked > 0) {
-      setProgress(0); // Start from beginning of curve
+      progressRef.current.value = 0;
       setIsMoving(true);
       setIsAnimating(true); // Disable mouse pan
-      coordsBeforeStartingAnimation.current = new THREE.Vector3(
+      animationStartPosition.current = new THREE.Vector3(
         camera.position.x,
         camera.position.y,
         camera.position.z,
       );
       if (currentLocation == "near") setDesiredLocation("mid");
       else setDesiredLocation("far");
+
+      // Animate progress with GSAP
+      gsap.to(progressRef.current, {
+        value: 1,
+        duration: animationDuration,
+        ease: easingFunction,
+        onComplete: () => {
+          setIsMoving(false);
+          setIsAnimating(false);
+          setCurrentLocation(currentLocation === "near" ? "mid" : "far");
+        }
+      });
     }
   }, [backClicked]);
 
   const handleClick = () => {
-    setProgress(0); // Start from beginning of curve
+    progressRef.current.value = 0;
     setIsMoving(true);
     setIsAnimating(true); // Disable mouse pan
-    coordsBeforeStartingAnimation.current = new THREE.Vector3(
+    animationStartPosition.current = new THREE.Vector3(
       camera.position.x,
       camera.position.y,
       camera.position.z,
     );
     setDesiredLocation("near");
+
+    // Animate progress with GSAP
+    gsap.to(progressRef.current, {
+      value: 1,
+      duration: animationDuration,
+      ease: easingFunction,
+      onComplete: () => {
+        setIsMoving(false);
+        setIsAnimating(false);
+        setCurrentLocation("near");
+      }
+    });
   };
 
   const [hoveringTheBuilding, setHoveringTheBuilding] = useState(false);
@@ -129,57 +194,30 @@ export function BuildingModel({
     setScaleMultiplier(1);
   };
 
-  useFrame((_state, delta) => {
-    if (
-      isMoving &&
-      progress >= 0 &&
-      progress <= 1 &&
-      desiredLocation != currentLocation
-    ) {
-      // Increment progress along the curve (speed controlled here)
-      const newProgress = Math.min(progress + delta*.50, 1); // 0.15 = speed, clamped to 1
+  useFrame(() => {
+    if (isMoving && desiredLocation !== currentLocation) {
+      const currentProgress = progressRef.current.value;
 
-      setProgress(newProgress);
-      //lets just leave the far case for later
-      let points = [coordsBeforeStartingAnimation.current];
-      switch (currentLocation) {
-        case "far":
-          if (desiredLocation == "mid") {
-            points = [...points, ...f2mWaypoints];
-          }
-          if (desiredLocation == "near") {
-            points = [...points, ...f2mWaypoints, ...m2nWaypoints];
-
-            //will fix this
-          }
-          break;
-        case "mid":
-          if (desiredLocation === "near") {
-            points = [...points, ...m2nWaypoints];
-          }
-          if (desiredLocation === "far") {
-            points = [...points, ...[...f2mWaypoints].reverse()];
-          }
-          break;
-        case "near":
-          points = [...points, ...[...m2nWaypoints].reverse()];
-          break;
+      // Determine the target position based on desired location
+      let targetPosition: THREE.Vector3;
+      if (desiredLocation === "far") {
+        targetPosition = farPosition;
+      } else if (desiredLocation === "mid") {
+        targetPosition = midPosition;
+      } else {
+        targetPosition = nearPosition;
       }
 
-      const curve = new THREE.CatmullRomCurve3(points);
+      // Create a simple curve between start and end positions
+      const curve = new THREE.CatmullRomCurve3([
+        animationStartPosition.current,
+        targetPosition
+      ]);
 
-      const position = curve.getPointAt(newProgress);
+      // Update camera position along the curve
+      const position = curve.getPointAt(currentProgress);
       camera.position.copy(position);
-      // Always look at the building
       camera.lookAt(buildingCenter);
-
-      // Check if weve reached the end
-      if (newProgress >= 1) {
-        setIsMoving(false);
-        setProgress(-1);
-        setIsAnimating(false); // Re-enable mouse pan
-        setCurrentLocation(desiredLocation);
-      }
     }
   });
 

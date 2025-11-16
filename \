@@ -17,18 +17,13 @@ const App = () => {
       <div
         className="backButton"
         onMouseEnter={() => {
-          setIsBackButtonHovered(true);
-          setIsAnimating(true)
-        }}
-        onMouseLeave={() => {
-          setIsBackButtonHovered(false);
-          setIsAnimating(false)
-        }}
-        onClick={() => setBackClicked((prev) => prev + 1)}
+           setIsBackButtonHovered(true)}}
+        onMouseLeave={() => {setIsBackButtonHovered(false)}
+        onClick={() => setBackClicked(prev => prev + 1)}
         style={{
-          transform: isBackButtonHovered ? "scale(0.9)" : "scale(1)",
-          transition: "transform 0.2s ease-in-out",
-          cursor: "pointer",
+          transform: isBackButtonHovered ? 'scale(0.9)' : 'scale(1)',
+          transition: 'transform 0.2s ease-in-out',
+          cursor: 'pointer',
         }}
       >
         <img
@@ -36,7 +31,7 @@ const App = () => {
           style={{
             height: "100%",
             width: "100%",
-            pointerEvents: "none",
+            pointerEvents: 'none',
           }}
         />
       </div>
@@ -52,10 +47,7 @@ const App = () => {
         <color attach="background" args={["#afa696"]} />
         <Lights />
         <Selection>
-          <Experience
-            setIsAnimating={setIsAnimating}
-            backClicked={backClicked}
-          />
+          <Experience setIsAnimating={setIsAnimating} backClicked={backClicked} />
           <PostProcessing />
         </Selection>
         <MousePan isAnimating={isAnimating} />

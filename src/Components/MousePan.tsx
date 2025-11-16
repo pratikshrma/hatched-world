@@ -104,6 +104,7 @@ const MousePan = ({ isAnimating, isBackButtonHovered }: MousePanProps) => {
       0.3,
       delta,
     );
+    camera.lookAt(-0.6,0.1,0)
   });
 
   return null;

@@ -26,7 +26,7 @@ const App = () => {
         }}
       >
         <img
-          src="/buttons/btn1.png"
+          src="/buttons/back.svg"
           style={{
             height: "100%",
             width: "100%",
@@ -38,7 +38,7 @@ const App = () => {
       <Canvas
         shadows
         camera={{
-          position: [0.74, 0.58, 1.55],
+          position: [4.0, 2.5, 5.0],
           rotation: [-0.24, 0.52, 0.1],
         }}
       >

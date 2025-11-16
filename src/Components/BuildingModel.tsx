@@ -3,6 +3,7 @@ import { useThree, useFrame } from "@react-three/fiber";
 import { useEffect, useMemo, useRef, useState } from "react";
 import * as THREE from "three";
 
+
 interface BuildingModelProps {
   scale: [number, number, number];
   position: [number, number, number];
@@ -10,6 +11,11 @@ interface BuildingModelProps {
   setIsAnimating: (isAnimating: boolean) => void;
   backClicked: number;
 }
+
+const easings = {
+  easeOutCubic: (t: number) => 1 - Math.pow(1 - t, 3),
+  easeOutQuart: (t: number) => 1 - Math.pow(1 - t, 4),
+};
 
 export function BuildingModel({
   setIsAnimating,
@@ -43,6 +49,9 @@ export function BuildingModel({
   const { camera } = useThree();
 
   const buildingCenter = new THREE.Vector3(-0.6, 0.1, 0);
+  const coordsBeforeStartingAnimation = useRef(
+    new THREE.Vector3(camera.position.x, camera.position.y, camera.position.z),
+  );
 
   const f2mWaypoints = [
     new THREE.Vector3(4.0, 2.5, 5.0), // Start from far away,
@@ -55,7 +64,6 @@ export function BuildingModel({
   ];
 
   const m2nWaypoints = [
-    new THREE.Vector3(0.74, 0.58, 1.55), // Start (end of intro) //WILL FIX THIS
     new THREE.Vector3(0.55, 0.51, 1.33), // Zoom in
     new THREE.Vector3(0.36, 0.44, 1.11), // Closer
     new THREE.Vector3(0.16, 0.37, 0.88), // Getting close
@@ -83,6 +91,11 @@ export function BuildingModel({
       setProgress(0); // Start from beginning of curve
       setIsMoving(true);
       setIsAnimating(true); // Disable mouse pan
+      coordsBeforeStartingAnimation.current = new THREE.Vector3(
+        camera.position.x,
+        camera.position.y,
+        camera.position.z,
+      );
       if (currentLocation == "near") setDesiredLocation("mid");
       else setDesiredLocation("far");
     }
@@ -92,6 +105,11 @@ export function BuildingModel({
     setProgress(0); // Start from beginning of curve
     setIsMoving(true);
     setIsAnimating(true); // Disable mouse pan
+    coordsBeforeStartingAnimation.current = new THREE.Vector3(
+      camera.position.x,
+      camera.position.y,
+      camera.position.z,
+    );
     setDesiredLocation("near");
   };
 
@@ -115,37 +133,39 @@ export function BuildingModel({
       desiredLocation != currentLocation
     ) {
       // Increment progress along the curve (speed controlled here)
-      const newProgress = Math.min(progress + delta * 0.15, 1); // 0.15 = speed, clamped to 1
-      setProgress(newProgress);
+      const newProgress = Math.min(progress + delta/10, 1); // 0.15 = speed, clamped to 1
+      const easedProgress = easings.easeOutCubic(newProgress) 
+
+      setProgress(easedProgress);
       //lets just leave the far case for later
-      let points;
+      let points = [coordsBeforeStartingAnimation.current];
       switch (currentLocation) {
         case "far":
           if (desiredLocation == "mid") {
-            points = f2mWaypoints;
+            points = [...points, ...f2mWaypoints];
           }
           if (desiredLocation == "near") {
-            points = [...f2mWaypoints, ...m2nWaypoints];
+            points = [...points, ...f2mWaypoints, ...m2nWaypoints];
 
             //will fix this
           }
           break;
         case "mid":
           if (desiredLocation === "near") {
-            points = m2nWaypoints;
+            points = [...points, ...m2nWaypoints];
           }
           if (desiredLocation === "far") {
-            points = [...f2mWaypoints].reverse();
+            points = [...points, ...[...f2mWaypoints].reverse()];
           }
           break;
         case "near":
-          points = [...m2nWaypoints].reverse();
+          points = [...points, ...[...m2nWaypoints].reverse()];
           break;
       }
 
       const curve = new THREE.CatmullRomCurve3(points);
 
-      const position = curve.getPoint(newProgress);
+      const position = curve.getPointAt(newProgress);
       camera.position.copy(position);
       // Always look at the building
       camera.lookAt(buildingCenter);

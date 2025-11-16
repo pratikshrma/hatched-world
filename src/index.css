@@ -1,34 +1,31 @@
-html,body,#root{
-  height:100%;
-  width:100%;
-  display:fixed;
-  top:0;
-  left:0;
-  margin:0;
-  padding:0;
+html,
+body,
+#root {
+  height: 100%;
+  width: 100%;
+  display: fixed;
+  top: 0;
+  left: 0;
+  margin: 0;
+  padding: 0;
 }
 
-
-.backButton{
-  position:fixed;
-  z-index:10;
-  margin-left:1em;
+.backButton {
+  position: fixed;
+  z-index: 10;
+  margin-left: 1em;
   margin-top: 1em;
-  border:1px solid black;
-  border-radius:50%;
-  height:60px;
-  width:60px;
+  height: 60px;
+  width: 60px;
 
-  display:flex;
-  justify-content:center;
-  align-items:center;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 
-
-
-  font-size:2em;
+  font-size: 2em;
 }
 
-.backButton>div{
-  height:100%;
-  width:100%
+.backButton > img {
+  filter: invert(27%) sepia(11%) saturate(874%) hue-rotate(2deg) brightness(98%)
+    contrast(93%);
 }

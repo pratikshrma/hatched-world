@@ -18,11 +18,11 @@ const App = () => {
         className="backButton"
         onMouseEnter={() => {
           setIsBackButtonHovered(true);
-          setIsAnimating(true)
+          // setIsAnimating(true)
         }}
         onMouseLeave={() => {
           setIsBackButtonHovered(false);
-          setIsAnimating(false)
+          // setIsAnimating(false)
         }}
         onClick={() => setBackClicked((prev) => prev + 1)}
         style={{

@@ -4,16 +4,36 @@ import Lights from "./Components/Lights";
 import PostProcessing from "./Components/PostProcessing";
 import { Leva } from "leva";
 import MousePan from "./Components/MousePan";
-// import { OrbitControls } from "@react-three/drei";
-import { Perf } from "r3f-perf";
 import { Selection } from "@react-three/postprocessing";
 import { useState } from "react";
 
 const App = () => {
-  const [isAnimating, setIsAnimating] = useState(false);
+  const [isAnimating, setIsAnimating] = useState(true);
+  const [isBackButtonHovered, setIsBackButtonHovered] = useState(false);
+  const [backClicked, setBackClicked] = useState(0);
 
   return (
     <>
+      <div
+        className="backButton"
+        onMouseEnter={() => setIsBackButtonHovered(true)}
+        onMouseLeave={() => setIsBackButtonHovered(false)}
+        onClick={() => setBackClicked(prev => prev + 1)}
+        style={{
+          transform: isBackButtonHovered ? 'scale(0.9)' : 'scale(1)',
+          transition: 'transform 0.2s ease-in-out',
+          cursor: 'pointer',
+        }}
+      >
+        <img
+          src="/buttons/btn1.png"
+          style={{
+            height: "100%",
+            width: "100%",
+            pointerEvents: 'none',
+          }}
+        />
+      </div>
       <Leva collapsed />
       <Canvas
         shadows
@@ -22,12 +42,11 @@ const App = () => {
           rotation: [-0.24, 0.52, 0.1],
         }}
       >
-        <Perf position="top-left" />
         {/* <OrbitControls /> */}
         <color attach="background" args={["#afa696"]} />
         <Lights />
         <Selection>
-          <Experience setIsAnimating={setIsAnimating} />
+          <Experience setIsAnimating={setIsAnimating} backClicked={backClicked} />
           <PostProcessing />
         </Selection>
         <MousePan isAnimating={isAnimating} />

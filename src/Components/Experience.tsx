@@ -5,9 +5,10 @@ import { BuildingModel } from "./BuildingModel";
 
 interface ExperienceProps {
   setIsAnimating: (isAnimating: boolean) => void;
+  backClicked: number;
 }
 
-const Experience = ({ setIsAnimating }: ExperienceProps) => {
+const Experience = ({ setIsAnimating, backClicked }: ExperienceProps) => {
   const { buildingScale, buildingPosition } = useControls({
     "Building Controls": folder({
       buildingScale: {
@@ -63,6 +64,7 @@ const Experience = ({ setIsAnimating }: ExperienceProps) => {
         position={buildingPosition}
         rotation={[0, Math.PI / 2, 0]}
         setIsAnimating={setIsAnimating}
+        backClicked={backClicked}
       />
     </group>
   );

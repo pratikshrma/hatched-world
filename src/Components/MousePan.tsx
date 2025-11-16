@@ -1,7 +1,7 @@
 import { useFrame, useThree } from "@react-three/fiber";
 import { folder, useControls } from "leva";
 import { easing } from "maath";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef} from "react";
 
 interface MousePosition {
   x: number;
@@ -18,8 +18,13 @@ const MousePan = ({ isAnimating }: MousePanProps) => {
   const basePosition = useRef({
     x: 0.0,
     y: 0.0,
-    z: 0.0
+    z: 0.0,
   });
+
+  const baseMousePos=useRef({
+    x:0.0,
+    y:0.0
+  })
 
   const { panStrenght } = useControls({
     "Pan Strength": folder({
@@ -44,7 +49,8 @@ const MousePan = ({ isAnimating }: MousePanProps) => {
       y: camera.position.y,
       z: camera.position.z,
     };
-  }, []);
+  }, [camera.position]);
+
 
   // Update base position when animation ends
   useEffect(() => {
@@ -56,6 +62,11 @@ const MousePan = ({ isAnimating }: MousePanProps) => {
         z: camera.position.z,
       };
     }
+
+   baseMousePos.current={
+      x:mousePos.current.x,
+      y:mousePos.current.y
+    } 
   }, [isAnimating, camera]);
 
   useEffect(() => {
@@ -65,8 +76,8 @@ const MousePan = ({ isAnimating }: MousePanProps) => {
       const maxX = window.innerWidth;
       const maxY = window.innerHeight;
 
-      const normalizedX = posx / maxX - 0.5;
-      const normalizedY = -(posy / maxY - 0.5);
+      const normalizedX = -(posx / maxX - 0.5);
+      const normalizedY = posy / maxY - 0.5;
 
       mousePos.current = {
         x: normalizedX,
@@ -81,15 +92,18 @@ const MousePan = ({ isAnimating }: MousePanProps) => {
     // Skip mouse panning when animation is active
     if (isAnimating) return;
 
+    const deltaX=mousePos.current.x-baseMousePos.current.x;
+    const deltaY=mousePos.current.y-baseMousePos.current.y;
+
     easing.damp3(
       camera.position,
       [
-        basePosition.current.x + mousePos.current.x * panStrenght,
-        basePosition.current.y + mousePos.current.y * panStrenght,
-        basePosition.current.z
+        basePosition.current.x + deltaX * panStrenght,
+        basePosition.current.y + deltaY * panStrenght,
+        basePosition.current.z,
       ],
       0.3,
-      delta
+      delta,
     );
   });
 

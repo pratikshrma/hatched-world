@@ -7,3 +7,28 @@ html,body,#root{
   margin:0;
   padding:0;
 }
+
+
+.backButton{
+  position:fixed;
+  z-index:10;
+  margin-left:1em;
+  margin-top: 1em;
+  border:1px solid black;
+  border-radius:50%;
+  height:60px;
+  width:60px;
+
+  display:flex;
+  justify-content:center;
+  align-items:center;
+
+
+
+  font-size:2em;
+}
+
+.backButton>div{
+  height:100%;
+  width:100%
+}

@@ -1,10 +1,15 @@
 import { useGLTF } from "@react-three/drei";
 import { useThree, useFrame } from "@react-three/fiber";
-import { useEffect, useMemo, useRef, useState } from "react";
+import {
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import * as THREE from "three";
 import gsap from "gsap";
 import { folder, useControls } from "leva";
-
+import { useGSAP } from "@gsap/react";
 
 interface BuildingModelProps {
   scale: [number, number, number];
@@ -56,26 +61,16 @@ export function BuildingModel({
     }),
   });
 
-  // Clone the original material and darken it for hover effect
-  const hoverObservatoryMaterial = useMemo(() => {
+  const [simpleObservatoryMaterial, baseColor] = useMemo(() => {
     const clonedMaterial = materials.Observatory.clone();
     // Darken by reducing the color values (multiply by a factor less than 1)
     if (clonedMaterial.color) {
-      clonedMaterial.color = clonedMaterial.color.clone().multiplyScalar(3.1);
+      clonedMaterial.color = clonedMaterial.color.clone().multiplyScalar(1.1);
     }
-    // Also reduce emissive if it exists
-    if (clonedMaterial.emissive) {
-      clonedMaterial.emissive = clonedMaterial.emissive
-        .clone()
-        .multiplyScalar(5.6);
-    } else {
-      clonedMaterial.emissive = clonedMaterial.emissive.set(10.5);
-    }
+    const baseColor = clonedMaterial.color.clone();
     clonedMaterial.needsUpdate = true;
-    return clonedMaterial;
+    return [clonedMaterial, baseColor];
   }, [materials.Observatory]);
-
-  const simpleObservatoryMaterial = materials.Observatory;
 
   const groupRef = useRef<THREE.Group>(null!);
   const { camera } = useThree();
@@ -94,7 +89,7 @@ export function BuildingModel({
   // Create a smooth curve through all waypoints
   const progressRef = useRef({ value: 0 }); // Object for GSAP to animate
   const [isMoving, setIsMoving] = useState(true);
-  const [scaleMultiplier, setScaleMultiplier] = useState(1);
+  const [scaleMultiplier, setScaleMultiplier] = useState(1.05);
 
   const [currentLocation, setCurrentLocation] = useState<
     "far" | "mid" | "near"
@@ -109,7 +104,11 @@ export function BuildingModel({
 
   // Initial animation on mount from far to mid
   useEffect(() => {
-    if (currentLocation === "far" && desiredLocation === "mid" && progressRef.current.value === 0) {
+    if (
+      currentLocation === "far" &&
+      desiredLocation === "mid" &&
+      progressRef.current.value === 0
+    ) {
       setIsMoving(true);
       setIsAnimating(true);
 
@@ -121,7 +120,7 @@ export function BuildingModel({
           setIsMoving(false);
           setIsAnimating(false);
           setCurrentLocation("mid");
-        }
+        },
       });
     }
   }, []); // Run only on mount
@@ -148,10 +147,11 @@ export function BuildingModel({
           setIsMoving(false);
           setIsAnimating(false);
           setCurrentLocation(currentLocation === "near" ? "mid" : "far");
-        }
+        },
       });
     }
   }, [backClicked]);
+
 
   const handleClick = () => {
     progressRef.current.value = 0;
@@ -173,25 +173,88 @@ export function BuildingModel({
         setIsMoving(false);
         setIsAnimating(false);
         setCurrentLocation("near");
-      }
+      },
     });
   };
-
+  
+  const scale=useRef({value:1.0})
   const [hoveringTheBuilding, setHoveringTheBuilding] = useState(false);
   const applyHoverEffects = () => {
     setHoveringTheBuilding(true);
-    if(desiredLocation=="near"){
-      setScaleMultiplier(1.0)
-      return
-    }
-    setScaleMultiplier(0.95);
+    gsap.to(scale.current,{
+      value:1.0,
+      duration:0.5,
+      ease:"power2.out",
+      onUpdate:()=>{
+        setScaleMultiplier(scale.current.value)
+      }
+    })
   };
 
   const removeHoverEffects = () => {
-    console.log("Now we are not hovering");
     setHoveringTheBuilding(false);
-    setScaleMultiplier(1);
+    if (desiredLocation == "near") {
+    gsap.to(scale.current,{
+      value:1.0,
+      duration:0.5,
+      ease:"power2.out",
+      onUpdate:()=>{
+        setScaleMultiplier(scale.current.value)
+      }
+    })
+      return;
+    }
+    gsap.to(scale.current,{
+      value:1.05,
+      duration:0.5,
+      ease:"power2.out",
+      onUpdate:()=>{
+        setScaleMultiplier(scale.current.value)
+      }
+    })
+  
   };
+  
+  useEffect(()=>{
+    gsap.to(scale.current, {
+      value: 1.05,
+      duration:2 ,
+      ease:"power2.out",
+      onUpdate:()=>{
+        setScaleMultiplier(scale.current.value)
+      }
+    });
+  },[backClicked])
+
+  const scalarValue = useRef({ value: 2.5 });
+
+  useGSAP(() => {
+    if (!hoveringTheBuilding && desiredLocation !="near") {
+      gsap.to(scalarValue.current, {
+        value: 1.9,
+        duration: 0.5,
+        ease: "power2.out",
+        onUpdate: () => {
+          simpleObservatoryMaterial.color = baseColor
+            .clone()
+            .multiplyScalar(scalarValue.current.value);
+          simpleObservatoryMaterial.needsUpdate = true;
+        },
+      });
+    } else {
+      gsap.to(scalarValue.current, {
+        value: 3,
+        duration: 0.5,
+        ease: "power2.out",
+        onUpdate: () => {
+          simpleObservatoryMaterial.color = baseColor
+            .clone()
+            .multiplyScalar(scalarValue.current.value);
+          simpleObservatoryMaterial.needsUpdate = true;
+        },
+      });
+    }
+  }, [hoveringTheBuilding]);
 
   useFrame(() => {
     if (isMoving && desiredLocation !== currentLocation) {
@@ -210,7 +273,7 @@ export function BuildingModel({
       // Create a simple curve between start and end positions
       const curve = new THREE.CatmullRomCurve3([
         animationStartPosition.current,
-        targetPosition
+        targetPosition,
       ]);
 
       // Update camera position along the curve
@@ -251,32 +314,50 @@ export function BuildingModel({
           castShadow
           receiveShadow
           geometry={nodes.Object_4.geometry}
-          material={
-            hoveringTheBuilding || desiredLocation == "near"
-              ? hoverObservatoryMaterial
-              : simpleObservatoryMaterial
-          }
+          material={simpleObservatoryMaterial}
         ></mesh>
         <mesh
           castShadow
           receiveShadow
           geometry={nodes.Object_5.geometry}
-          material={
-            hoveringTheBuilding || desiredLocation == "near"
-              ? hoverObservatoryMaterial
-              : simpleObservatoryMaterial
-          }
+          material={simpleObservatoryMaterial}
         />
         <mesh
           castShadow
           receiveShadow
           geometry={nodes.Object_6.geometry}
-          material={
-            hoveringTheBuilding || desiredLocation == "near"
-              ? hoverObservatoryMaterial
-              : simpleObservatoryMaterial
-          }
+          material={simpleObservatoryMaterial}
         />
+        {/* <mesh */}
+        {/*   castShadow */}
+        {/*   receiveShadow */}
+        {/*   geometry={nodes.Object_4.geometry} */}
+        {/*   material={ */}
+        {/*     hoveringTheBuilding || desiredLocation == "near" */}
+        {/*       ? hoverObservatoryMaterial */}
+        {/*       : simpleObservatoryMaterial */}
+        {/*   } */}
+        {/* ></mesh> */}
+        {/* <mesh */}
+        {/*   castShadow */}
+        {/*   receiveShadow */}
+        {/*   geometry={nodes.Object_5.geometry} */}
+        {/*   material={ */}
+        {/*     hoveringTheBuilding || desiredLocation == "near" */}
+        {/*       ? hoverObservatoryMaterial */}
+        {/*       : simpleObservatoryMaterial */}
+        {/*   } */}
+        {/* /> */}
+        {/* <mesh */}
+        {/*   castShadow */}
+        {/*   receiveShadow */}
+        {/*   geometry={nodes.Object_6.geometry} */}
+        {/*   material={ */}
+        {/*     hoveringTheBuilding || desiredLocation == "near" */}
+        {/*       ? hoverObservatoryMaterial */}
+        {/*       : simpleObservatoryMaterial */}
+        {/*   } */}
+        {/* /> */}
       </group>
     </group>
   );

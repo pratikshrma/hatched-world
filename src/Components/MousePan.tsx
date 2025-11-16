@@ -89,20 +89,6 @@ const MousePan = ({ isAnimating, isBackButtonHovered }: MousePanProps) => {
   }, []);
 
   useFrame((_state, delta) => {
-    // Skip mouse panning when animation is active
-    // if (isBackButtonHovered) {
-    //   easing.damp3(
-    //     camera.position,
-    //     [
-    //       basePosition.current.x,
-    //       basePosition.current.y,
-    //       basePosition.current.z,
-    //     ],
-    //     0.1,
-    //     delta,
-    //   );
-    //   return;
-    // }
     if (isAnimating) return;
 
     const deltaX = mousePos.current.x - baseMousePos.current.x;

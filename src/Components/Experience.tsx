@@ -19,7 +19,7 @@ const Experience = ({ setIsAnimating, backClicked }: ExperienceProps) => {
         label: "Scale",
       },
       buildingPosition: {
-        value: [-0.6, -0.04, 0],
+        value: [-0.6, -0.045, 0],
         label: "Position",
       },
     }),

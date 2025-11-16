@@ -11,7 +11,6 @@ const App = () => {
   const [isAnimating, setIsAnimating] = useState(true);
   const [isBackButtonHovered, setIsBackButtonHovered] = useState(false);
   const [backClicked, setBackClicked] = useState(0);
-
   return (
     <>
       <div
@@ -58,7 +57,7 @@ const App = () => {
           />
           <PostProcessing />
         </Selection>
-        <MousePan isAnimating={isAnimating} isBackButtonHovered={isBackButtonHovered}/>
+        <MousePan isAnimating={isAnimating} isBackButtonHovered={isBackButtonHovered} />
       </Canvas>
     </>
   );

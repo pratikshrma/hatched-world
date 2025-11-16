@@ -116,6 +116,10 @@ export function BuildingModel({
   const [hoveringTheBuilding, setHoveringTheBuilding] = useState(false);
   const applyHoverEffects = () => {
     setHoveringTheBuilding(true);
+    if(desiredLocation=="near"){
+      setScaleMultiplier(1.0)
+      return
+    }
     setScaleMultiplier(0.95);
   };
 

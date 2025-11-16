@@ -58,7 +58,7 @@ const App = () => {
           />
           <PostProcessing />
         </Selection>
-        <MousePan isAnimating={isAnimating} />
+        <MousePan isAnimating={isAnimating} isBackButtonHovered={isBackButtonHovered}/>
       </Canvas>
     </>
   );

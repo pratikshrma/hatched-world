@@ -1,7 +1,7 @@
 import { useFrame, useThree } from "@react-three/fiber";
 import { folder, useControls } from "leva";
 import { easing } from "maath";
-import { useEffect, useRef} from "react";
+import { useEffect, useRef } from "react";
 
 interface MousePosition {
   x: number;
@@ -10,9 +10,10 @@ interface MousePosition {
 
 interface MousePanProps {
   isAnimating: boolean;
+  isBackButtonHovered: boolean;
 }
 
-const MousePan = ({ isAnimating }: MousePanProps) => {
+const MousePan = ({ isAnimating, isBackButtonHovered }: MousePanProps) => {
   const { camera } = useThree();
 
   const basePosition = useRef({
@@ -21,10 +22,10 @@ const MousePan = ({ isAnimating }: MousePanProps) => {
     z: 0.0,
   });
 
-  const baseMousePos=useRef({
-    x:0.0,
-    y:0.0
-  })
+  const baseMousePos = useRef({
+    x: 0.0,
+    y: 0.0,
+  });
 
   const { panStrenght } = useControls({
     "Pan Strength": folder({
@@ -51,7 +52,6 @@ const MousePan = ({ isAnimating }: MousePanProps) => {
     };
   }, [camera.position]);
 
-
   // Update base position when animation ends
   useEffect(() => {
     if (!isAnimating) {
@@ -63,10 +63,10 @@ const MousePan = ({ isAnimating }: MousePanProps) => {
       };
     }
 
-   baseMousePos.current={
-      x:mousePos.current.x,
-      y:mousePos.current.y
-    } 
+    baseMousePos.current = {
+      x: mousePos.current.x,
+      y: mousePos.current.y,
+    };
   }, [isAnimating, camera]);
 
   useEffect(() => {
@@ -90,16 +90,29 @@ const MousePan = ({ isAnimating }: MousePanProps) => {
 
   useFrame((_state, delta) => {
     // Skip mouse panning when animation is active
+    // if (isBackButtonHovered) {
+    //   easing.damp3(
+    //     camera.position,
+    //     [
+    //       basePosition.current.x,
+    //       basePosition.current.y,
+    //       basePosition.current.z,
+    //     ],
+    //     0.1,
+    //     delta,
+    //   );
+    //   return;
+    // }
     if (isAnimating) return;
 
-    const deltaX=mousePos.current.x-baseMousePos.current.x;
-    const deltaY=mousePos.current.y-baseMousePos.current.y;
+    const deltaX = mousePos.current.x - baseMousePos.current.x;
+    const deltaY = mousePos.current.y - baseMousePos.current.y;
 
     easing.damp3(
       camera.position,
       [
-        basePosition.current.x + deltaX * panStrenght,
-        basePosition.current.y + deltaY * panStrenght,
+        basePosition.current.x + (!isBackButtonHovered?deltaX * panStrenght:0),
+        basePosition.current.y + (!isBackButtonHovered?deltaY * panStrenght:0),
         basePosition.current.z,
       ],
       0.3,

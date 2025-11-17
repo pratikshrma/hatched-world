@@ -2,6 +2,8 @@ import { useGLTF } from "@react-three/drei";
 import { folder, useControls } from "leva";
 import * as THREE from "three";
 import { BuildingModel } from "./BuildingModel";
+import WaterShader from "./WaterShader";
+
 
 interface ExperienceProps {
   setIsAnimating: (isAnimating: boolean) => void;
@@ -53,20 +55,27 @@ const Experience = ({ setIsAnimating, backClicked }: ExperienceProps) => {
   });
 
   return (
-    <group>
-      <primitive object={surroundingHouses} />
-      <mesh receiveShadow rotation={[Math.PI / 2, 0, 0]}>
-        <planeGeometry args={[10, 10]} />
-        <meshStandardMaterial color={"#d3d3d3"} side={THREE.DoubleSide} />
-      </mesh>
-      <BuildingModel
-        scale={[buildingScale, buildingScale, buildingScale]}
-        position={buildingPosition}
-        rotation={[0, Math.PI / 2, 0]}
-        setIsAnimating={setIsAnimating}
-        backClicked={backClicked}
-      />
-    </group>
+    <>
+      <group position={[0,0.1,0]}>
+        <primitive object={surroundingHouses} />
+        <mesh
+          receiveShadow
+          rotation={[Math.PI / 2, 0, 0]}
+          position={[-1.9, 0, -0.5]}
+        >
+          <circleGeometry args={[2]} />
+          <meshStandardMaterial color={"#d3d3d3"} side={THREE.DoubleSide} />
+        </mesh>
+        <BuildingModel
+          scale={[buildingScale, buildingScale, buildingScale]}
+          position={buildingPosition}
+          rotation={[0, Math.PI / 2, 0]}
+          setIsAnimating={setIsAnimating}
+          backClicked={backClicked}
+        />
+      </group>
+      <WaterShader/>
+    </>
   );
 };
 

@@ -1,0 +1,137 @@
+import * as THREE from "three";
+import vertexShader from "../Shaders/WaterShader/vert.glsl?raw";
+import fragmentShader from "../Shaders/WaterShader/frag.glsl?raw";
+import { useMemo } from "react";
+import { useFrame, useThree } from "@react-three/fiber";
+import { useControls, folder } from "leva";
+
+const WaterShader= () => {
+  const { camera } = useThree();
+  const {
+    uAmplitude,
+    uWaveLength,
+    uWaveIterations,
+    uShininess,
+    uSpecularIntensity,
+    uSteepness,
+    uFoamColor,
+    uFoamThreshold,
+    uFoamSoftness,
+    uShoreColor,
+    uShoreDistance,
+    uShoreSoftness,
+    uFogColor,
+    uFogNear,
+    uFogFar,
+    uCloudColor,
+    uCloudScale,
+    uCloudSpeed,
+  } = useControls({
+    "Water Shader": folder({
+      uAmplitude: {
+        value: 0.08,
+        min: 0,
+        max: 0.3,
+        step: 0.01,
+        label: "Amplitude",
+      },
+      uWaveLength: {
+        value: 0.55,
+        min: 0,
+        max: 5,
+        step: 0.01,
+        label: "Wavelength",
+      },
+      uWaveIterations: {
+        value: 8,
+        min: 1,
+        max: 20,
+        step: 1,
+        label: "Iterations",
+      },
+      uShininess: { value: 40, min: 1, max: 512, step: 1 },
+      uSpecularIntensity: { value: 0.8, min: 0, max: 2.0, step: 0.01 },
+      uSteepness: { value: 0.8, min: 0, max: 2.0, step: 0.01 },
+      uFoamThreshold: { value: 0.12, min: 0.0, max: 0.4, step: 0.01 },
+      uFoamSoftness: { value: 0.15, min: 0.0, max: 0.4, step: 0.01 },
+      uFoamColor: { value: "#ffffff" },
+      uShoreColor: { value: "#a9c9a3" },
+      uShoreDistance: { value: 1.4, min: 0.0, max: 10.0, step: 0.1 },
+      uShoreSoftness: { value: 3.4, min: 0.0, max: 5.0, step: 0.1 },
+      uFogColor: { value: "#cccccc" },
+      uFogNear: { value: 10, min: 0.0, max: 50.0, step: 0.1 },
+      uFogFar: { value: 15.0, min: 0.0, max: 50.0, step: 0.1 },
+      uCloudColor: { value: "#e6e6e6" },
+      uCloudScale: { value: 0.5, min: 0.1, max: 2.0, step: 0.01 },
+      uCloudSpeed: { valud: 0.05, min: 0.0, max: 0.5, step: 0.01 },
+    }),
+  });
+
+  const waterMaterial = useMemo(() => {
+    return new THREE.ShaderMaterial({
+      vertexShader: vertexShader,
+      fragmentShader: fragmentShader,
+      uniforms: {
+        uTime: { value: 0.0 },
+        uAmplitude: { value: uAmplitude },
+        uWaveLength: { value: uWaveLength },
+        uWaveIterations: { value: uWaveIterations },
+        uCameraPosition: { value: camera.position },
+        uShininess: { value: uShininess },
+        uSpecularIntensity: { value: uSpecularIntensity },
+        uSteepness: { value: uSteepness },
+        uFoamColor: { value: new THREE.Color(uFoamColor) },
+        uFoamSoftness: { value: uFoamSoftness },
+        uFoamThreshold: { value: uFoamThreshold },
+        uShoreColor: { value: new THREE.Color(uShoreColor) },
+        uShoreSoftness: { value: uShoreSoftness },
+        uShoreDistance: { value: uShoreDistance },
+        uFogColor: { value: new THREE.Color(uFogColor) },
+        uFogNear: { value: uFogNear },
+        uFogFar: { value: uFogFar },
+        uCloudColor: { value: new THREE.Color(uCloudColor) },
+        uCloudSpeed: { value: uCloudSpeed },
+        uCloudScale: { value: uCloudScale },
+      },
+      transparent: true,
+    });
+  }, [
+    uAmplitude,
+    uWaveLength,
+    uWaveIterations,
+    uShininess,
+    uSpecularIntensity,
+    camera.position,
+    uSteepness,
+    uFoamColor,
+    uFoamSoftness,
+    uFoamThreshold,
+    uShoreColor,
+    uShoreDistance,
+    uShoreSoftness,
+    uFogColor,
+    uFogFar,
+    uFogNear,
+    uCloudScale,
+    uCloudSpeed,
+    uCloudColor,
+  ]);
+
+  useFrame((state) => {
+    waterMaterial.uniforms.uTime.value = state.clock.elapsedTime;
+    waterMaterial.uniforms.uCameraPosition.value.copy(camera.position);
+  });
+
+  return (
+    <mesh
+      rotation={[-Math.PI / 2, 0, 0]}
+      material={waterMaterial}
+      position={[-1, 0, 0]}
+    >
+      {/* We increase the number of segments to 512x512 to have enough vertices for detailed waves. */}
+      <planeGeometry args={[30, 30, 1024, 1024]} />
+    </mesh>
+  );
+};
+
+export default WaterShader;

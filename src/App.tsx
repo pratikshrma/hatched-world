@@ -4,9 +4,8 @@ import Lights from "./Components/Lights";
 import PostProcessing from "./Components/PostProcessing";
 import { Leva } from "leva";
 import MousePan from "./Components/MousePan";
-import { Selection } from "@react-three/postprocessing";
 import { useState } from "react";
-
+// import { OrbitControls } from "@react-three/drei";
 const App = () => {
   const [isAnimating, setIsAnimating] = useState(true);
   const [isBackButtonHovered, setIsBackButtonHovered] = useState(false);
@@ -17,11 +16,9 @@ const App = () => {
         className="backButton"
         onMouseEnter={() => {
           setIsBackButtonHovered(true);
-          // setIsAnimating(true)
         }}
         onMouseLeave={() => {
           setIsBackButtonHovered(false);
-          // setIsAnimating(false)
         }}
         onClick={() => setBackClicked((prev) => prev + 1)}
         style={{
@@ -50,13 +47,8 @@ const App = () => {
         {/* <OrbitControls /> */}
         <color attach="background" args={["#afa696"]} />
         <Lights />
-        <Selection>
-          <Experience
-            setIsAnimating={setIsAnimating}
-            backClicked={backClicked}
-          />
-          <PostProcessing />
-        </Selection>
+        <Experience setIsAnimating={setIsAnimating} backClicked={backClicked} />
+        <PostProcessing />
         <MousePan isAnimating={isAnimating} isBackButtonHovered={isBackButtonHovered} />
       </Canvas>
     </>

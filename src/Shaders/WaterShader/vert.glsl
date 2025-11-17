@@ -31,7 +31,7 @@ vec2 randomDirection(float seed) {
 void main() {
   vec3 transformedPosition = position;
   float elevation = 0.0;
-  float dist = distance(position.xy, vec2(-0.9, .5));
+  float dist = distance(position.xy+0.5, vec2(-0.9, .5));
 
   vShoreFactor = smoothstep(uShoreDistance, uShoreDistance + uShoreSoftness, dist);
   for (float i = 1.0; i <= uWaveIterations; i++) {

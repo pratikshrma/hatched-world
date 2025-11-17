@@ -5,7 +5,7 @@ import PostProcessing from "./Components/PostProcessing";
 import { Leva } from "leva";
 import MousePan from "./Components/MousePan";
 import { useState } from "react";
-import { OrbitControls } from "@react-three/drei";
+// import { OrbitControls } from "@react-three/drei";
 const App = () => {
   const [isAnimating, setIsAnimating] = useState(true);
   const [isBackButtonHovered, setIsBackButtonHovered] = useState(false);
@@ -49,6 +49,7 @@ const App = () => {
         <Lights />
         <Experience setIsAnimating={setIsAnimating} backClicked={backClicked} />
         <PostProcessing />
+        <MousePan isAnimating={isAnimating} isBackButtonHovered={isBackButtonHovered} />
       </Canvas>
     </>
   );

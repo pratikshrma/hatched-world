@@ -21,7 +21,7 @@ body,
   display: flex;
   justify-content: center;
   align-items: center;
-
+  user-select:none;
   font-size: 2em;
 }
 

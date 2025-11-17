@@ -25,8 +25,26 @@ export function BuildingModel({
   ...props
 }: BuildingModelProps) {
   const { nodes, materials } = useGLTF("/model/building.glb") as any;
+  const farPosition = new THREE.Vector3(4.0, 2.5, 5.0);
+  const midPosition = new THREE.Vector3(0.74, 0.58, 1.55);
+  const nearPosition = new THREE.Vector3(-0.09, 0.28, 0.59);
+  
+  const progressRef = useRef({ value: 0 }); // Object for GSAP to animate
+  const scale=useRef({value:1.0})
+  const scalarValue = useRef({ value: 2.5 });
+  
+  const [isMoving, setIsMoving] = useState(true);
+  const [scaleMultiplier, setScaleMultiplier] = useState(1.05);
 
-  // Animation controls for designer
+  const [currentLocation, setCurrentLocation] = useState<
+    "far" | "mid" | "near"
+  >("far");
+  const [desiredLocation, setDesiredLocation] = useState<
+    "far" | "mid" | "near"
+  >("mid");
+  const [hoveringTheBuilding, setHoveringTheBuilding] = useState(false);
+  
+
   const { animationDuration, easingFunction } = useControls({
     "Camera Animation": folder({
       animationDuration: {
@@ -82,77 +100,6 @@ export function BuildingModel({
     new THREE.Vector3(camera.position.x, camera.position.y, camera.position.z),
   );
 
-  // Fixed positions for each camera state
-  const farPosition = new THREE.Vector3(4.0, 2.5, 5.0);
-  const midPosition = new THREE.Vector3(0.74, 0.58, 1.55);
-  const nearPosition = new THREE.Vector3(-0.09, 0.28, 0.59);
-  // Create a smooth curve through all waypoints
-  const progressRef = useRef({ value: 0 }); // Object for GSAP to animate
-  const [isMoving, setIsMoving] = useState(true);
-  const [scaleMultiplier, setScaleMultiplier] = useState(1.05);
-
-  const [currentLocation, setCurrentLocation] = useState<
-    "far" | "mid" | "near"
-  >("far");
-  const [desiredLocation, setDesiredLocation] = useState<
-    "far" | "mid" | "near"
-  >("mid");
-
-  useEffect(() => {
-    console.log(currentLocation, " ", desiredLocation);
-  }, [currentLocation, desiredLocation]);
-
-  // Initial animation on mount from far to mid
-  useEffect(() => {
-    if (
-      currentLocation === "far" &&
-      desiredLocation === "mid" &&
-      progressRef.current.value === 0
-    ) {
-      setIsMoving(true);
-      setIsAnimating(true);
-
-      gsap.to(progressRef.current, {
-        value: 1,
-        duration: animationDuration,
-        ease: easingFunction,
-        onComplete: () => {
-          setIsMoving(false);
-          setIsAnimating(false);
-          setCurrentLocation("mid");
-        },
-      });
-    }
-  }, []); // Run only on mount
-
-  useEffect(() => {
-    if (backClicked > 0) {
-      progressRef.current.value = 0;
-      setIsMoving(true);
-      setIsAnimating(true); // Disable mouse pan
-      animationStartPosition.current = new THREE.Vector3(
-        camera.position.x,
-        camera.position.y,
-        camera.position.z,
-      );
-      if (currentLocation == "near") setDesiredLocation("mid");
-      else setDesiredLocation("far");
-
-      // Animate progress with GSAP
-      gsap.to(progressRef.current, {
-        value: 1,
-        duration: animationDuration,
-        ease: easingFunction,
-        onComplete: () => {
-          setIsMoving(false);
-          setIsAnimating(false);
-          setCurrentLocation(currentLocation === "near" ? "mid" : "far");
-        },
-      });
-    }
-  }, [backClicked]);
-
-
   const handleClick = () => {
     progressRef.current.value = 0;
     setIsMoving(true);
@@ -177,8 +124,6 @@ export function BuildingModel({
     });
   };
   
-  const scale=useRef({value:1.0})
-  const [hoveringTheBuilding, setHoveringTheBuilding] = useState(false);
   const applyHoverEffects = () => {
     setHoveringTheBuilding(true);
     gsap.to(scale.current,{
@@ -215,6 +160,29 @@ export function BuildingModel({
   
   };
   
+  // Initial animation on mount from far to mid
+  useEffect(() => {
+    if (
+      currentLocation === "far" &&
+      desiredLocation === "mid" &&
+      progressRef.current.value === 0
+    ) {
+      setIsMoving(true);
+      setIsAnimating(true);
+
+      gsap.to(progressRef.current, {
+        value: 1,
+        duration: animationDuration,
+        ease: easingFunction,
+        onComplete: () => {
+          setIsMoving(false);
+          setIsAnimating(false);
+          setCurrentLocation("mid");
+        },
+      });
+    }
+  }, []);
+  
   useEffect(()=>{
     gsap.to(scale.current, {
       value: 1.05,
@@ -226,7 +194,32 @@ export function BuildingModel({
     });
   },[backClicked])
 
-  const scalarValue = useRef({ value: 2.5 });
+  useEffect(() => {
+    if (backClicked > 0) {
+      progressRef.current.value = 0;
+      setIsMoving(true);
+      setIsAnimating(true); // Disable mouse pan
+      animationStartPosition.current = new THREE.Vector3(
+        camera.position.x,
+        camera.position.y,
+        camera.position.z,
+      );
+      if (currentLocation == "near") setDesiredLocation("mid");
+      else setDesiredLocation("far");
+
+      // Animate progress with GSAP
+      gsap.to(progressRef.current, {
+        value: 1,
+        duration: animationDuration,
+        ease: easingFunction,
+        onComplete: () => {
+          setIsMoving(false);
+          setIsAnimating(false);
+          setCurrentLocation(currentLocation === "near" ? "mid" : "far");
+        },
+      });
+    }
+  }, [backClicked]);
 
   useGSAP(() => {
     if (!hoveringTheBuilding && desiredLocation !="near") {
@@ -328,36 +321,6 @@ export function BuildingModel({
           geometry={nodes.Object_6.geometry}
           material={simpleObservatoryMaterial}
         />
-        {/* <mesh */}
-        {/*   castShadow */}
-        {/*   receiveShadow */}
-        {/*   geometry={nodes.Object_4.geometry} */}
-        {/*   material={ */}
-        {/*     hoveringTheBuilding || desiredLocation == "near" */}
-        {/*       ? hoverObservatoryMaterial */}
-        {/*       : simpleObservatoryMaterial */}
-        {/*   } */}
-        {/* ></mesh> */}
-        {/* <mesh */}
-        {/*   castShadow */}
-        {/*   receiveShadow */}
-        {/*   geometry={nodes.Object_5.geometry} */}
-        {/*   material={ */}
-        {/*     hoveringTheBuilding || desiredLocation == "near" */}
-        {/*       ? hoverObservatoryMaterial */}
-        {/*       : simpleObservatoryMaterial */}
-        {/*   } */}
-        {/* /> */}
-        {/* <mesh */}
-        {/*   castShadow */}
-        {/*   receiveShadow */}
-        {/*   geometry={nodes.Object_6.geometry} */}
-        {/*   material={ */}
-        {/*     hoveringTheBuilding || desiredLocation == "near" */}
-        {/*       ? hoverObservatoryMaterial */}
-        {/*       : simpleObservatoryMaterial */}
-        {/*   } */}
-        {/* /> */}
       </group>
     </group>
   );

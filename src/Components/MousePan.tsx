@@ -21,11 +21,15 @@ const MousePan = ({ isAnimating, isBackButtonHovered }: MousePanProps) => {
     y: 0.0,
     z: 0.0,
   });
-
   const baseMousePos = useRef({
     x: 0.0,
     y: 0.0,
   });
+  const mousePos = useRef<MousePosition>({
+    x: 0.0,
+    y: 0.0,
+  });
+
 
   const { panStrenght } = useControls({
     "Pan Strength": folder({
@@ -36,11 +40,6 @@ const MousePan = ({ isAnimating, isBackButtonHovered }: MousePanProps) => {
         step: 0.01,
       },
     }),
-  });
-
-  const mousePos = useRef<MousePosition>({
-    x: 0.0,
-    y: 0.0,
   });
 
   // Initialize base position once on mount

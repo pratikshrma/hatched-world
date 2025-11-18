@@ -8,9 +8,10 @@ import WaterShader from "./WaterShader";
 interface ExperienceProps {
   setIsAnimating: (isAnimating: boolean) => void;
   backClicked: number;
+  loaderDone:boolean
 }
 
-const Experience = ({ setIsAnimating, backClicked }: ExperienceProps) => {
+const Experience = ({ setIsAnimating, backClicked,loaderDone }: ExperienceProps) => {
   const { buildingScale, buildingPosition } = useControls({
     "Building Controls": folder({
       buildingScale: {
@@ -72,6 +73,7 @@ const Experience = ({ setIsAnimating, backClicked }: ExperienceProps) => {
           rotation={[0, Math.PI / 2, 0]}
           setIsAnimating={setIsAnimating}
           backClicked={backClicked}
+          loaderDone={loaderDone}
         />
       </group>
       <WaterShader/>

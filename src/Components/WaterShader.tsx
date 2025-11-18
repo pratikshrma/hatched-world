@@ -8,6 +8,7 @@ import { useControls, folder } from "leva";
 const WaterShader= () => {
   const { camera } = useThree();
   const {
+    geometryScale,
     uAmplitude,
     uWaveLength,
     uWaveIterations,
@@ -28,6 +29,12 @@ const WaterShader= () => {
     uCloudSpeed,
   } = useControls({
     "Water Shader": folder({
+     geometryScale:{
+        value:1024,
+        min:128,
+        max:2048,
+        step:10
+     }, 
       uAmplitude: {
         value: 0.08,
         min: 0,
@@ -63,7 +70,7 @@ const WaterShader= () => {
       uFogFar: { value: 15.0, min: 0.0, max: 50.0, step: 0.1 },
       uCloudColor: { value: "#e6e6e6" },
       uCloudScale: { value: 0.5, min: 0.1, max: 2.0, step: 0.01 },
-      uCloudSpeed: { valud: 0.05, min: 0.0, max: 0.5, step: 0.01 },
+      uCloudSpeed: { value: 0.05, min: 0.0, max: 0.5, step: 0.01 },
     }),
   });
 
@@ -90,7 +97,6 @@ const WaterShader= () => {
         uFogNear: { value: uFogNear },
         uFogFar: { value: uFogFar },
         uCloudColor: { value: new THREE.Color(uCloudColor) },
-        uCloudSpeed: { value: uCloudSpeed },
         uCloudScale: { value: uCloudScale },
       },
       transparent: true,
@@ -124,12 +130,12 @@ const WaterShader= () => {
 
   return (
     <mesh
+      key={geometryScale}
       rotation={[-Math.PI / 2, 0, 0]}
       material={waterMaterial}
       position={[-1, 0, 0]}
     >
-      {/* We increase the number of segments to 512x512 to have enough vertices for detailed waves. */}
-      <planeGeometry args={[30, 30, 1024, 1024]} />
+      <planeGeometry args={[30, 30,geometryScale, geometryScale]} />
     </mesh>
   );
 };

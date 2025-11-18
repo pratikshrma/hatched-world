@@ -1,0 +1,39 @@
+import { useMemo, useRef } from "react";
+import * as THREE from "three";
+import vertexShader from "../Shaders/PaperTearingShader/vert.glsl?raw";
+import fragmentShader from "../Shaders/PaperTearingShader/frag.glsl?raw";
+import { useFrame, useThree } from "@react-three/fiber";
+import { useTexture } from "@react-three/drei";
+
+const PaperTearingShader = () => {
+  const { camera } = useThree();
+  const meshRef = useRef<THREE.Mesh | null>(null);
+  const uDissolveTexture=useTexture('/textures/noise/iChannel0.png')
+
+  const [paperGeometry, paperMaterial] = useMemo(() => {
+    const geo = new THREE.PlaneGeometry(15, 15);
+    const mat = new THREE.ShaderMaterial({
+      fragmentShader: fragmentShader,
+      vertexShader: vertexShader,
+      uniforms:{
+        uTime:{value:0.0},
+        uDissolveTexture:{value:uDissolveTexture}
+      }
+    });
+    return [geo, mat];
+  }, [uDissolveTexture]);
+
+  useFrame(() => {
+    if (meshRef.current) {
+      meshRef.current.lookAt(camera.position);
+    }
+  });
+
+  return (
+    <>
+      <mesh ref={meshRef} geometry={paperGeometry} material={paperMaterial} />
+    </>
+  );
+};
+
+export default PaperTearingShader;

@@ -1,11 +1,6 @@
 import { useGLTF } from "@react-three/drei";
 import { useThree, useFrame } from "@react-three/fiber";
-import {
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import * as THREE from "three";
 import gsap from "gsap";
 import { folder, useControls } from "leva";
@@ -17,22 +12,24 @@ interface BuildingModelProps {
   rotation: [number, number, number];
   setIsAnimating: (isAnimating: boolean) => void;
   backClicked: number;
+  loaderDone:boolean
 }
 
 export function BuildingModel({
   setIsAnimating,
   backClicked,
+  loaderDone,
   ...props
 }: BuildingModelProps) {
   const { nodes, materials } = useGLTF("/model/building.glb") as any;
   const farPosition = new THREE.Vector3(4.0, 2.5, 5.0);
   const midPosition = new THREE.Vector3(0.74, 0.58, 1.55);
   const nearPosition = new THREE.Vector3(-0.09, 0.28, 0.59);
-  
+
   const progressRef = useRef({ value: 0 }); // Object for GSAP to animate
-  const scale=useRef({value:1.0})
+  const scale = useRef({ value: 1.0 });
   const scalarValue = useRef({ value: 2.5 });
-  
+
   const [isMoving, setIsMoving] = useState(true);
   const [scaleMultiplier, setScaleMultiplier] = useState(1.05);
 
@@ -43,7 +40,6 @@ export function BuildingModel({
     "far" | "mid" | "near"
   >("mid");
   const [hoveringTheBuilding, setHoveringTheBuilding] = useState(false);
-  
 
   const { animationDuration, easingFunction } = useControls({
     "Camera Animation": folder({
@@ -111,7 +107,6 @@ export function BuildingModel({
     );
     setDesiredLocation("near");
 
-    // Animate progress with GSAP
     gsap.to(progressRef.current, {
       value: 1,
       duration: animationDuration,
@@ -123,49 +118,49 @@ export function BuildingModel({
       },
     });
   };
-  
+
   const applyHoverEffects = () => {
     setHoveringTheBuilding(true);
-    gsap.to(scale.current,{
-      value:1.0,
-      duration:0.5,
-      ease:"power2.out",
-      onUpdate:()=>{
-        setScaleMultiplier(scale.current.value)
-      }
-    })
+    gsap.to(scale.current, {
+      value: 1.0,
+      duration: 0.5,
+      ease: "power2.out",
+      onUpdate: () => {
+        setScaleMultiplier(scale.current.value);
+      },
+    });
   };
 
   const removeHoverEffects = () => {
     setHoveringTheBuilding(false);
     if (desiredLocation == "near") {
-    gsap.to(scale.current,{
-      value:1.0,
-      duration:0.5,
-      ease:"power2.out",
-      onUpdate:()=>{
-        setScaleMultiplier(scale.current.value)
-      }
-    })
+      gsap.to(scale.current, {
+        value: 1.0,
+        duration: 0.5,
+        ease: "power2.out",
+        onUpdate: () => {
+          setScaleMultiplier(scale.current.value);
+        },
+      });
       return;
     }
-    gsap.to(scale.current,{
-      value:1.05,
-      duration:0.5,
-      ease:"power2.out",
-      onUpdate:()=>{
-        setScaleMultiplier(scale.current.value)
-      }
-    })
-  
+    gsap.to(scale.current, {
+      value: 1.05,
+      duration: 0.5,
+      ease: "power2.out",
+      onUpdate: () => {
+        setScaleMultiplier(scale.current.value);
+      },
+    });
   };
-  
+
   // Initial animation on mount from far to mid
   useEffect(() => {
     if (
       currentLocation === "far" &&
       desiredLocation === "mid" &&
-      progressRef.current.value === 0
+      progressRef.current.value === 0 &&
+      loaderDone
     ) {
       setIsMoving(true);
       setIsAnimating(true);
@@ -181,18 +176,18 @@ export function BuildingModel({
         },
       });
     }
-  }, []);
-  
-  useEffect(()=>{
+  }, [loaderDone]);
+
+  useEffect(() => {
     gsap.to(scale.current, {
       value: 1.05,
-      duration:2 ,
-      ease:"power2.out",
-      onUpdate:()=>{
-        setScaleMultiplier(scale.current.value)
-      }
+      duration: 2,
+      ease: "power2.out",
+      onUpdate: () => {
+        setScaleMultiplier(scale.current.value);
+      },
     });
-  },[backClicked])
+  }, [backClicked]);
 
   useEffect(() => {
     if (backClicked > 0) {
@@ -222,7 +217,7 @@ export function BuildingModel({
   }, [backClicked]);
 
   useGSAP(() => {
-    if (!hoveringTheBuilding && desiredLocation !="near") {
+    if (!hoveringTheBuilding && desiredLocation != "near") {
       gsap.to(scalarValue.current, {
         value: 1.9,
         duration: 0.5,

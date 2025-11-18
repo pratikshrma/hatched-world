@@ -40,7 +40,6 @@ const PaperTearingShader: React.FC<props> = ({
     if (startLoader) {
       paperMaterial.uniforms.uTime.value += delta;
       const progress = paperMaterial.uniforms.uTime.value / LOADER_DURATION ;
-      console.log(progress," - ",paperMaterial.uniforms.uTime.value)
       if (progress > 0.38 && !loaderDone) { //don't ask about 0.38 it works if you increase it then the time between animation end and zoom start animation increases.
         setLoaderDone(true);
       }
